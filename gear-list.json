@@ -85,8 +85,8 @@
     "item_type":"holster",
     "armor":887,
     "main_stat":"firearms",
-    "firearms":1124,
-    "stamina":1260,
+    "firearms":1255,
+    "stamina":1198,
     "electronics":1163
   },
   {
@@ -103,9 +103,27 @@
     "item_type":"backpack",
     "armor":1297,
     "main_stat":"firearms",
-    "firearms":1966,
+    "firearms":1201,
     "stamina":205,
     "electronics":205
+  },
+  {
+    "name":"HighEnd_stam",
+    "item_type":"backpack",
+    "armor":1106,
+    "main_stat":"stamina",
+    "firearms":205,
+    "stamina":1198,
+    "electronics":205
+  },
+  {
+    "name":"Striker_elec",
+    "item_type":"backpack",
+    "armor":1297,
+    "main_stat":"electronics",
+    "firearms":205,
+    "stamina":205,
+    "electronics":1256
   },
   {
     "name":"StrikerGloves_stam",
@@ -126,12 +144,21 @@
     "electronics":205
   },
   {
-    "name":"HighEndHolster_fa",
+    "name":"HighEndHolster_stam",
     "item_type":"holster",
     "armor":895,
-    "main_stat":"firearms",
+    "main_stat":"stamina",
     "firearms":1121,
     "stamina":1218,
     "electronics":1140
+  },
+  {
+    "name":"HighEndHolster_elec",
+    "item_type":"holster",
+    "armor":888,
+    "main_stat":"electronics",
+    "firearms":1121,
+    "stamina":1198,
+    "electronics":1249
   }
 ]

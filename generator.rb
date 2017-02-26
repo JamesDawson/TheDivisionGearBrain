@@ -97,11 +97,16 @@ class HolsterGearItem < GearItem
   protected
   def generate_item_stats
     @item_type = 'holster'
-    @armor = 852 + rand(1001-852)
-    @main_stat = choose_main_stat
-    @firearms = 1114 + rand(1272-1114)
-    @stamina = 1114 + rand(1272-1114)
-    @electronics = 1114 + rand(1272-1114)
+    @armor = 852 + rand(1001 - 852)
+    @firearms = 1114 + rand(1272 - 1114)
+    @stamina = 1114 + rand(1272 - 1114)
+    @electronics = 1114 + rand(1272 - 1114)
+    # derive main_stat
+    tmp_stats = Hash.new
+    tmp_stats['firearms'] = @firearms
+    tmp_stats['stamina'] = @stamina
+    tmp_stats['electronics'] = @electronics
+    @main_stat = tmp_stats.max_by{|k,v| v}[0]
   end
 end
 

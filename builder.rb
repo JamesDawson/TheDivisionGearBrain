@@ -82,7 +82,7 @@ puts "Searched #{perms} permutations"
 # basic validation that works with this contrived dataset
 optimal_build.each do |k, v|
   # holsters don't have a main stat in the same way as the other items
-  if k != :holster && v['main_stat'] != optimise_for
+  if v['main_stat'] != optimise_for
     puts 'Houston we have a problem!'
   else
     puts "#{k}: #{v['name']}"

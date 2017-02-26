@@ -45,7 +45,9 @@ puts "Number of backpacks: #{inventory.backpacks.count}"
 puts "Number of gloves: #{inventory.gloves.count}"
 puts "Number of holsters: #{inventory.holsters.count}"
 
-puts 'looking for optimal Firearms loadout...'
+optimise_for = 'stamina'
+
+puts "looking for optimal #{optimise_for} loadout..."
 best = 0
 perms = 0
 optimal_build = {}
@@ -56,12 +58,12 @@ inventory.vests.each do |v|
         inventory.gloves.each do |g|
           inventory.holsters.each do |h|
             perms += 1
-            total_firearms = v['firearms'] + m['firearms'] + k['firearms'] + b['firearms'] + g['firearms'] + h['firearms']            # puts "Current permuation firearms score: #{total_firearms}"
-            if total_firearms <= best
+            total = v[optimise_for] + m[optimise_for] + k[optimise_for] + b[optimise_for] + g[optimise_for] + h[optimise_for]            # puts "Current permuation firearms score: #{total_firearms}"
+            if total <= best
               next
             end
             puts 'Found better loadout!'
-            best = total_firearms
+            best = total
             optimal_build[:vest] = v
             optimal_build[:mask] = m
             optimal_build[:kneepads] = k
@@ -77,9 +79,10 @@ end
 
 puts "Searched #{perms} permutations"
 
-# validate
+# basic validation that works with this contrived dataset
 optimal_build.each do |k, v|
-  if k != :holster && v['main_stat'] != 'firearms'
+  # holsters don't have a main stat in the same way as the other items
+  if k != :holster && v['main_stat'] != optimise_for
     puts 'Houston we have a problem!'
   else
     puts "#{k}: #{v['name']}"

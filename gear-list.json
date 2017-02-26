@@ -108,7 +108,7 @@
     "electronics":205
   },
   {
-    "name":"HighEnd_stam",
+    "name":"HighEndPack_stam",
     "item_type":"backpack",
     "armor":1106,
     "main_stat":"stamina",
@@ -117,7 +117,7 @@
     "electronics":205
   },
   {
-    "name":"Striker_elec",
+    "name":"StrikerPack_elec",
     "item_type":"backpack",
     "armor":1297,
     "main_stat":"electronics",

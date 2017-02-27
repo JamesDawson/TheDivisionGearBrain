@@ -1,4 +1,4 @@
-def find_items_recursive(inventory, item_type, stat, calculation, current_items = [], best_build = {'items' => [], 'score' => 0, 'searched' => 0})
+def find_items_recursive(inventory, item_type, calculation, calculation_args, selection, selection_args, current_items = [], best_build = {})
   last_item_type = false
   current_item_type_index = inventory.required_items.index(item_type)
   if current_item_type_index == inventory.required_items.count - 1
@@ -11,8 +11,11 @@ def find_items_recursive(inventory, item_type, stat, calculation, current_items 
     current_items.push(i)
 
     if !last_item_type
-      best_build = find_items_recursive(inventory, next_item_type, stat, calculation, current_items, best_build)
+      best_build = find_items_recursive(inventory, next_item_type, calculation, calculation_args, selection, selection_args, current_items, best_build)
     else
+      if best_build['searched'].nil?
+        best_build['searched'] = 0
+      end
       best_build['searched'] += 1
 
       # scoring implementation begins here
@@ -20,14 +23,26 @@ def find_items_recursive(inventory, item_type, stat, calculation, current_items 
       # 1. calculate the score (e.g. amount of firearms)
       # 2. compare score to current 'best'
       #
-      build_score = self.send(calculation, *[current_items, stat])
-      
-      if build_score > best_build['score']
-        # puts "  better #{stat} score found: #{build_score} (#{i['name']})"
-        best_build['score'] = build_score
-        best_build['items'] = deep_copy(current_items)
+      calculation_args_values = []
+      calculation_args.each do |c|
+        if c.start_with?('#')
+          calculation_args_values.push(eval(c.tr('#','')))
+        else
+          calculation_args_values.push(c)
+        end
       end
+      build_score = self.send(calculation, *calculation_args_values)
 
+      # apply the criteria to the result of the calculation
+      selection_args_values = []
+      selection_args.each do |c|
+        if c.start_with?('#')
+          selection_args_values.push(eval(c.tr('#','')))
+        else
+          selection_args_values.push(c)
+        end
+      end
+      best_build = self.send(selection, *selection_args_values)
     end
     current_items.pop
   end
@@ -44,3 +59,15 @@ def calculate_total_stat(items, stat)
   end
   return score
 end
+
+def is_score_higher(score, best_build, items)
+  if best_build['score'].nil?
+    best_build['score'] = 0
+  end
+  if score > best_build['score']
+    best_build['score'] = score
+    best_build['items'] = deep_copy(items)
+  end
+  return best_build
+end
+

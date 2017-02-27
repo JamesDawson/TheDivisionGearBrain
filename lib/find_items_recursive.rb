@@ -1,17 +1,17 @@
-def find_items_recursive(item_type, stat, current_items = [], best_build = {'items' => [], 'score' => 0, 'searched' => 0})
+def find_items_recursive(inventory, item_type, stat, current_items = [], best_build = {'items' => [], 'score' => 0, 'searched' => 0})
   last_item_type = false
-  current_item_type_index = $required_items.index(item_type)
-  if current_item_type_index == $required_items.count - 1
+  current_item_type_index = inventory.required_items.index(item_type)
+  if current_item_type_index == inventory.required_items.count - 1
     last_item_type = true
   else
-    next_item_type = $required_items[current_item_type_index + 1]
+    next_item_type = inventory.required_items[current_item_type_index + 1]
   end
 
-  $inventory.send(item_type).each do |i|
+  inventory.send(item_type).each do |i|
     current_items.push(i)
 
     if !last_item_type
-      best_build = find_items_recursive(next_item_type, stat, current_items, best_build)
+      best_build = find_items_recursive(inventory, next_item_type, stat, current_items, best_build)
     else
       build_score = 0
       current_items.each do |s|

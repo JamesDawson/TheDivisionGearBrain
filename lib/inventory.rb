@@ -1,7 +1,9 @@
 class Inventory
-  attr_reader :items, :vests, :masks, :kneepads, :backpacks, :gloves, :holsters
+  attr_reader :required_items, :items, :vests, :masks, :kneepads, :backpacks, :gloves, :holsters
 
   def initialize(data_file)
+    @required_items = ['vests','masks','kneepads','backpacks','gloves','holsters']
+    
     @vests = []
     @masks = []
     @kneepads = []

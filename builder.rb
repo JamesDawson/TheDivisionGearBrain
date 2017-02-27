@@ -29,7 +29,8 @@ best = find_item_score(inventory, 'vests', optimise_for)
 puts "Best #{optimise_for} build: #{best}"
 
 # Call the recursive logic that returns the best build
-best_build = find_items_recursive(inventory, inventory.required_items[0], optimise_for)
+# inclues simplistic pluggable 'calculation' logic
+best_build = find_items_recursive(inventory, inventory.required_items[0], optimise_for, 'calculate_total_stat')
 puts "Best #{optimise_for} build: #{best_build['score']} (from #{best_build['searched']} permutations)"
 best_build['items'].each do |i|
   puts "  #{i['name']} (#{i[optimise_for]})"

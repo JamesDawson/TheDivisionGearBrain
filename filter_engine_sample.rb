@@ -14,8 +14,8 @@ engine = FilterEngine.new(cache_file)
 # setup the pipeline of rules that should be applied to the build permutations
 engine.filters.push({ 'name' => 'EnsureAtLeast', 'parameters' => {'stat' => 'firearms', 'min_value' => 3832} })
 engine.filters.push({ 'name' => 'EnsureAtLeast', 'parameters' => {'stat' => 'stamina', 'min_value' => 3832} })
-engine.sort_criteria = ['electronics','stamina']
-engine.num_results_to_return = 3
+engine.sort_criteria = ['electronics','armor','stamina']
+engine.num_results_to_return = 5
 
 # execute the rules
 res = engine.process
@@ -24,6 +24,7 @@ res = engine.process
 puts "*** Top #{res.size} Builds ***"
 res.each do |r|
   puts "\nElectronics: #{r['statistics']['electronics']}"
+  puts "Armor: #{r['statistics']['armor']}"
   puts "Stamina: #{r['statistics']['stamina']}"
   puts "Firearms: #{r['statistics']['firearms']}"
   r['items'].each do |i|

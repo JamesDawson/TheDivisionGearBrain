@@ -1,5 +1,6 @@
 require 'oj'
-Dir.glob(File.expand_path("../../lib/*.rb", __FILE__)).each do |file|
+require '../../lib/helpers.rb'
+Dir.glob(File.expand_path("../lib/*.rb", __FILE__)).each do |file|
   require file
 end
 

@@ -5,12 +5,12 @@
             "name": "Debug Local File",
             "type": "Ruby",
             "request": "launch",
-            "cwd": "${workspaceRoot}",
+            "cwd": "${fileDirname}",
             "program": "${file}",
             "useBundler": false,
-            "pathToRDebugIDE": ".direnv/ruby/bin/rdebug-ide",
+            "pathToRDebugIDE": "${workspaceRoot}/.direnv/ruby/bin/rdebug-ide",
             "env": {
-                "GEM_HOME": ".direnv/ruby",
+                "GEM_HOME": "${workspaceRoot}/.direnv/ruby",
                 "GEM_PATH": "/Users/james/.gem/ruby/2.3.3:/Users/james/.rubies/ruby-2.3.3/lib/ruby/gems/2.3.0",
                 "GEM_ROOT": "/Users/james/.rubies/ruby-2.3.3/lib/ruby/gems/2.3.0"
             }

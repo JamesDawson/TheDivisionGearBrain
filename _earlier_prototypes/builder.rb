@@ -1,10 +1,10 @@
 require 'oj'
-Dir.glob(File.expand_path("../lib/*.rb", __FILE__)).each do |file|
+Dir.glob(File.expand_path("../../lib/*.rb", __FILE__)).each do |file|
   require file
 end
 
 # load the test data
-inventory = Inventory.new('gear-list.json')
+inventory = Inventory.new('../gear-list.json')
 
 puts "Number of items loaded: #{inventory.items.count}"
 puts "Number of vests: #{inventory.vests.count}"

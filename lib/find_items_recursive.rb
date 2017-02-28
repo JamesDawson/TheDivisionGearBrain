@@ -60,6 +60,17 @@ def calculate_total_stat(items, stat)
   return score
 end
 
+def calculate_total_stat_and_armor(items, stat)
+  score = {'armor' => 0, "#{stat}" => 0}
+  items.each do |i|
+    score['armor'] += i['armor']
+    score[stat] += i[stat]
+  end
+  return score
+end
+
+
+
 def is_score_higher(score, best_build, items)
   if best_build['score'].nil?
     best_build['score'] = 0
@@ -71,3 +82,25 @@ def is_score_higher(score, best_build, items)
   return best_build
 end
 
+
+# optimise for armor and a specified stat
+# experimenting with different structure 'score'
+def optimise_for_armor_then_stat(score, stat, best_build, items)
+  if best_build['score'].nil?
+    best_build['score'] = 0
+  end
+  if best_build[stat].nil?
+    best_build[stat] = 0
+  end
+  if best_build['armor'].nil?
+    best_build['armor'] = 0
+  end
+
+  if score['armor'] > best_build['armor']
+    best_build['armor'] = score['armor']
+    best_build[stat] = score[stat]
+    best_build['items'] = deep_copy(items)
+  end
+
+  return best_build
+end

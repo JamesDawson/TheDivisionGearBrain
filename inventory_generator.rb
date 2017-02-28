@@ -95,6 +95,7 @@ end
 
 class HolsterGearItem < GearItem
   protected
+  # override stats generation RNG logic for holsters
   def generate_item_stats
     @item_type = 'holster'
     @armor = 852 + rand(1001 - 852)

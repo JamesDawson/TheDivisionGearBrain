@@ -29,6 +29,6 @@ res.each do |r|
   puts "Stamina: #{total_stamina}"
   puts "Firearms: #{total_firearms}"
   r['build'].each do |i|
-    puts "\t#{i['name']} (#{i['armor']})"
+    puts "\t#{i['name']} (#{i['armor']} armor)"
   end
 end

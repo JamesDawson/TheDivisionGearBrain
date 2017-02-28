@@ -1,11 +1,12 @@
 require 'oj'
+require '../lib/helpers.rb'
 Dir.glob(File.expand_path("../lib/*.rb", __FILE__)).each do |file|
   require file
 end
 
 # load the test data
-# inventory = Inventory.new('gear-list.json')
-cache_file = 'cached-gear-permutations.json'
+# inventory = Inventory.new('../gear-list.json')
+cache_file = 'cached-gear-permutations.dat'
 # num_builds = inventory.generate_builds_cache(cache_file)
 # puts "Generated a cache of all #{num_builds} possible gear item permutations: #{cache_file}"
 

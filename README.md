@@ -1,5 +1,5 @@
 A pet project to learn more about using Ruby outside of config management tools and to aid experimentation with
-different builds in game 'The Division'.
+different builds in the game 'The Division'.
 
 Previous iterations are retained, but the current prototype can be run:
 
@@ -7,8 +7,8 @@ Previous iterations are retained, but the current prototype can be run:
 
 You can experiment with changing the criteria used to select builds by:
 
-- editing/adding ```engine.filters.push``` lines
-- changing the sort criteria
+- editing/adding ```engine.filters.push``` lines in ```filter_engine_sample.rb```
+- changing the stats (and their order) included in ```engine.sort_criteria```
 - writing new filters (see the ```filters``` folder for examples)
 
 Roadmap

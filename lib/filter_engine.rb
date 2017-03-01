@@ -25,7 +25,7 @@ class FilterEngine
 
         @filters.each do |f|
           # dynamically call the 'process' method on the class associated with the current rule/filter
-          filter_args = [ build_info['statistics'], f['parameters'] ]
+          filter_args = [ build_info, f['parameters'] ]
           res = Object.const_get(f['name']).send('process', *filter_args)
           if !res['passed']
             # abandon the current pipeline as soon as one filter does not pass

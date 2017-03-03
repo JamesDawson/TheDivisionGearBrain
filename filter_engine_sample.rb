@@ -1,15 +1,20 @@
 require 'oj'
+require 'benchmark'
 Dir.glob(File.expand_path("../lib/*.rb", __FILE__)).each do |file|
   require file
 end
 
 # load the test data
-inventory = Inventory.new('gear-list.json')
-cache_file = 'cached-gear-permutations.dat'
-num_builds = inventory.generate_builds_cache(cache_file)
-puts "Generated a cache of all #{num_builds} possible gear item permutations: #{cache_file}"
+# inventory = InventoryCompressed.new('my-gear-list.json')
+# db_name = 'gear_db'
+cache_name = 'mygear'
+# time = Benchmark.measure do
+#   num_builds = inventory.generate_builds_cache(cache_name)
+# end
+# puts "Generated a cache of all #{num_builds} possible gear item combinations: #{cache_name}"
+# puts "Time Taken: #{time} seconds - processing rate: #{num_builds / time} builds/sec"
 
-engine = FilterEngine.new(cache_file)
+engine = FilterEngineCompressed.new(cache_name)
 
 # setup the pipeline of filters that should be applied to the build permutations
 # the order they are specified is the order they are evaluated
@@ -27,11 +32,14 @@ engine.sort_criteria = ['electronics','armor','stamina']
 engine.num_results_to_return = 3
 
 # show me the builds!
-res = engine.process
+time = Benchmark.measure do
+  res = engine.process
+end
+puts "Time Taken: #{time} seconds - comparison rate: #{res['count'] / time} builds/sec"
 
 # render the results in some vaguely useful way
-puts "*** Top #{res.size} Builds ***"
-res.each do |r|
+puts "*** Top #{res['results'].size} Builds ***"
+res['results'].each do |r|
   puts "\nElectronics: #{r['statistics']['electronics']}"
   puts "Armor: #{r['statistics']['armor']}"
   puts "Stamina: #{r['statistics']['stamina']}"

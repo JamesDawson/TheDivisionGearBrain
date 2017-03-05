@@ -1,4 +1,5 @@
 require 'oj'
+require 'parallel'
 Dir.glob(File.expand_path("../../filters/*.rb", __FILE__)).each do |plugin|
   require plugin
 end
@@ -25,8 +26,11 @@ class FilterEngineCompressed
       puts "Searching build combinations..."
       # process the cache file 1 line at a time
       # whilst the cache file is not valid JSON, each line is a valid JSON object
+      # Parallel.each(File.foreach(@builds_cache_file).with_index, in_processes: 1) do |build_json, build_count|
+      # File.foreach(@builds_cache_file).with_index do |build_json, build_count|
       File.foreach(@builds_cache_file).with_index do |build_json, build_count|
         build_info = Oj.load(build_json)
+        # puts "build_info: #{build_info.class}, #{build_info.count}"
         all_filters_passed = true
 
         # resolve actual build items from the hash_code key
@@ -65,7 +69,7 @@ class FilterEngineCompressed
         if build_count % 100000 == 0 then print '.'; $stdout.flush end
         if build_count % 1000000 == 0 then print "#{build_count / 1000000}"; $stdout.flush end
       end
-      return { 'count' => build_count, 'results' => results }
+      return { 'count' => 0, 'results' => results }
     else
       puts "No rules supplied!"
     end

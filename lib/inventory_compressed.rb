@@ -4,11 +4,12 @@ require 'zlib'
 require 'base64'
 
 class InventoryCompressed
-  attr_reader :statistics, :required_items, :items, :vests, :masks, :kneepads, :backpacks, :gloves, :holsters
+  attr_reader :statistics, :required_items, :items, :vests, :masks, :kneepads, :backpacks, :gloves, :holsters, :included_items
 
   def initialize(data_file)
-    @statistics = ['firearms', 'stamina', 'electronics', 'armor']
+    @statistics = ['firearms', 'stamina', 'electronics', 'armor', 'health','allresist','hp_on_kill','protection_from_elites','exotic_dmg_resilience','critchance','critdamage','smg_damage','ar_damage','shotgun_dmg','lmg_dmg','pistol_dmg','mmr_dmg','enemyarmordmg','skillhaste','skillpower','weaponstab','wepreloadspd','sig.res.gain','dmg_vs_elites','shockresist','burnresist','disorientresist','blinddeafresist','disruptresist','bleedresist','killxp','ammocap']
     @required_items = ['vests','masks','kneepads','backpacks','gloves','holsters']
+    @included_items = []
     @vests = []
     @masks = []
     @kneepads = []
@@ -22,24 +23,31 @@ class InventoryCompressed
     # puts "json: #{json}"
     @items = Oj.load(json)
 
+    skipped_items = 0
     @items.each do |i|
-      item_hash = Digest::SHA1.base64digest Oj.dump(i)
-      i['base64_sha1'] = item_hash
-      case i['item_type'].downcase
-      when 'vest'
-        @vests.push(i)
-      when 'mask'
-        @masks.push(i)
-      when 'kneepads'
-        @kneepads.push(i)
-      when 'backpack'
-        @backpacks.push(i)
-      when 'gloves'
-        @gloves.push(i)
-      when 'holster'
-        @holsters.push(i)
+      if Ensure50thPercentile(i)
+        item_hash = Digest::SHA1.base64digest Oj.dump(i)
+        i['base64_sha1'] = item_hash
+        @included_items.push(i)
+        case i['item_type'].downcase
+        when 'vest'
+          @vests.push(i)
+        when 'mask'
+          @masks.push(i)
+        when 'kneepads'
+          @kneepads.push(i)
+        when 'backpack'
+          @backpacks.push(i)
+        when 'gloves'
+          @gloves.push(i)
+        when 'holster'
+          @holsters.push(i)
+        end
+      else
+        skipped_items += 1
       end
     end
+    puts "Ignoring #{skipped_items} items that fell below the 50th percentile for their armor & main stat - included #{included_items.size}"
   end
 
   def generate_builds_cache(cache_name)
@@ -50,7 +58,7 @@ class InventoryCompressed
     f = File.open(items_cache_file, 'w')
     puts 'Creating Items cache file...'
     begin
-      @items.each do |i|
+      @included_items.each do |i|
         item_json = Oj.dump i
         # item_hash = Digest::SHA1.base64digest item_json
         # compressed_item = Zlib::Deflate.deflate(item_json)
@@ -100,7 +108,7 @@ class InventoryCompressed
         item_keys = []
         items_in_build.each do |item|
           # item_keys.push(Digest::SHA1.base64digest (Oj.dump item))
-          item_keys.push(i['base64_sha1'])
+          item_keys.push(item['base64_sha1'])
         end
         # compressed_stats = Zlib::Deflate.deflate(Oj.dump aggregate_stats)
 
@@ -122,5 +130,32 @@ class InventoryCompressed
       result[stat] = build_items.inject(0){|sum, item| sum + item[stat].to_i}
     end
     return result
+  end
+
+  # filters out items whose main stat is in the bottom 50th Ensure50thPercentile
+  def Ensure50thPercentile(item)
+
+    min_stat = 1193
+    case item['item_type'].downcase
+    when 'vest'
+      min_armor = 1854
+    when 'mask'
+      min_armor = 927
+    when 'kneepads'
+      min_armor = 1544
+    when 'backpack'
+      min_armor = 1235
+    when 'gloves'
+      min_armor = 927
+    when 'holster'
+      min_armor = 927
+    end
+
+    main_stat = [item['firearms'].to_i, item['stamina'].to_i, item['electronics'].to_i].max
+    if item['armor'].to_i >= min_armor #&& main_stat >= min_stat
+      return true
+    else
+      return false
+    end
   end
 end

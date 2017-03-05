@@ -12,13 +12,15 @@ class Inventory
     @backpacks = []
     @gloves = []
     @holsters = []
+    @mods = []
+    @perf_mods = []
 
     json = File.read(data_file)
     # puts "json: #{json}"
     @items = Oj.load(json)
 
     @items.each do |i|
-      case i['item_type']
+      case i['item_type'].downcase
       when 'vest'
         @vests.push(i)
       when 'mask'
@@ -76,13 +78,14 @@ class Inventory
       # remove the last item before looping around to the next
       items_in_build.pop
     end
+    if count % 1000 == 0 then print '.'; $stdout.flush end
     return count
   end
 
   def create_aggregated_build_stats(build_items)
     result = {}
     @statistics.each do |stat|
-      result[stat] = build_items.inject(0){|sum, item| sum + item[stat]}
+      result[stat] = build_items.inject(0){|sum, item| sum + item[stat].to_i}
     end
     return result
   end

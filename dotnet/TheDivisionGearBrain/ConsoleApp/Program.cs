@@ -10,8 +10,14 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
-            var inventory = new Lib.Inventory(@"D:\PROJECTS\TheDivisionGearBrain\my-gear-list.json");
+            var inventory = new Lib.Inventory(@"..\..\..\..\..\my-gear-list.json", 75);
+            
+            Console.WriteLine("Pre-computing all build combinations...");
             var buildsCount = inventory.GenerateBuildCombinationCache("csharp");
+            Console.WriteLine(string.Format("\nCompleted - created {0} build combinations", buildsCount));
+
+            var cacheName = "csharp";
+
         }
     }
 }

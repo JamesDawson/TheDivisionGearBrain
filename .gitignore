@@ -1,1 +1,4 @@
 .direnv/
+bin/
+obj/
+dotnet/TheDivisionGearBrain/packages/

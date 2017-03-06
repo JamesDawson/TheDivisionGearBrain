@@ -9,7 +9,13 @@ using Newtonsoft.Json;
 
 namespace Lib
 {
-    class FilterEngine
+    public class FilterPipelineStep
+    {
+        public string Filter { get; set; }
+        public Dictionary<string,string> Parameters { get; set; }
+    }
+
+    public class FilterEngine
     {
         private string itemsCacheFile;
         private string buildsCacheFile;
@@ -17,7 +23,7 @@ namespace Lib
         private List<GearItem> Items { get; set; }
 
         public int ResultsCount { get; set; }
-        public List<string> Filters { get; set; }
+        public List<FilterPipelineStep> Filters { get; set; }
         public List<string> SortCriteria { get; set; }
 
         public FilterEngine(string cacheName, int resultsCount)
@@ -25,7 +31,7 @@ namespace Lib
             this.itemsCacheFile = string.Format("{0}-items.dat");
             this.buildsCacheFile = string.Format("{0}-builds.dat");
             this.ResultsCount = resultsCount;
-            this.Filters = new List<string>();
+            this.Filters = new List<FilterPipelineStep>();
             this.SortCriteria = new List<string>();
 
             using (var sr = new StreamReader(this.itemsCacheFile))
@@ -41,14 +47,19 @@ namespace Lib
                 Console.WriteLine("Searching build combinations...");
                 using (var sr = new StreamReader(this.buildsCacheFile))
                 {
-                    // read the build info frmo the cache file
-                    var cachedbuild = JsonConvert.DeserializeObject<CachedBuildInfo>(sr.ReadLine());
+                    // read the build info from the cache file
+                    var cachedBuild = JsonConvert.DeserializeObject<CachedBuildInfo>(sr.ReadLine());
+                    
                     // map the item IDs to the actual Item object
-                    var buildDetails = cachedbuild.Items.Select(c => this.Items.Where(i => i.Id == c)).FirstOrDefault();
+                    var buildInfo = cachedBuild.Items.Select(c => this.Items.Where(i => i.Id == c)).FirstOrDefault();
+                    var buildStats = cachedBuild.Stats;
 
+                    var allFiltersPassed = true;
                     foreach (var filter in this.Filters)
                     {
-                        //
+                        // build parameters
+                        // call filter via reflection?
+                        //var res = 
                     }
 
                     if (allFiltersPassed)

@@ -18,7 +18,11 @@ namespace Lib
         public string ItemType { get; set; }
         public string Id { get; set; }
         public Dictionary<string, decimal> Stats { get; set; }
+        
+        public GearItem()
+        {
 
+        }
         public GearItem(Dictionary<string, string> item)
         {
             this.Name = item["name"];
@@ -153,9 +157,14 @@ namespace Lib
             string buildCacheFilename = string.Format("{0}-builds.dat", name);
 
             Console.WriteLine("Generating item cache file...");
+            var flattenedItems = new List<GearItem>();
+            foreach (var key in this.Items.Keys)
+            {
+                flattenedItems.AddRange(this.Items[key]);
+            }
             using (var sw = new StreamWriter(itemCacheFilename))
             {
-                sw.Write(JsonConvert.SerializeObject(this.Items));
+                sw.Write(JsonConvert.SerializeObject(flattenedItems));
             }
 
             Console.WriteLine("Generating build cache file...");

@@ -23,8 +23,8 @@ namespace ConsoleApp
 
             var filters = new List<FilterPipelineStep>
             {
-                new FilterPipelineStep { Filter="EnsureAtLeast", Parameters = new Dictionary<string,string>(){ { "stat", "firearms" }, { "min_value", "3832" }} },
-                new FilterPipelineStep { Filter="EnsureAtLeast", Parameters = new Dictionary<string,string>(){ { "stat", "stamina" }, { "min_value", "3832" }} }
+                new FilterPipelineStep { Filter="Lib.EnsureAtLeastFilter", Parameters = new Dictionary<string,string>(){ { "stat", "firearms" }, { "min_value", "3832" }} },
+                new FilterPipelineStep { Filter="Lib.EnsureAtLeastFilter", Parameters = new Dictionary<string,string>(){ { "stat", "stamina" }, { "min_value", "3832" }} }
             };
             engine.Filters = filters;
 

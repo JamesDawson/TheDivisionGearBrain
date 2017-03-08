@@ -73,7 +73,8 @@ namespace Lib
             kneepads = 2,
             backpack = 3,
             gloves = 4,
-            holster = 5
+            holster = 5,
+            gearmod = 6
         }
         private readonly string[] ItemTypesAsString;
         
@@ -116,20 +117,22 @@ namespace Lib
 
         //public Dictionary<ItemType, List<Dictionary<string, string>>> Items { get; set; }
         public Dictionary<string, List<GearItem>> Items { get; set; }
+        public List<IEnumerable<GearItem>> GearModCombinations { get; set; }
 
         public Inventory(string datafile, int minPercentile = 50)
         {
             this.StatsAsString = Enum.GetNames(typeof(Stats));
             this.ItemTypesAsString = Enum.GetNames(typeof(ItemType));
 
-            Items = new Dictionary<string, List<GearItem>>
+            this.Items = new Dictionary<string, List<GearItem>>
             {
                 { "vest", new List<GearItem>() },
                 { "mask", new List<GearItem>() },
                 { "kneepads", new List<GearItem>() },
                 { "backpack", new List<GearItem>() },
                 { "gloves", new List<GearItem>() },
-                { "holster", new List<GearItem>() }
+                { "holster", new List<GearItem>() },
+                { "gearmod", new List<GearItem>() }
             };
 
             int rawItemCount = 0;
@@ -148,7 +151,9 @@ namespace Lib
                     rawItemCount++;
                 }
             }
+            this.GearModCombinations = this.Items["gearmod"].DifferentCombinations(5).ToList();
             Console.WriteLine(string.Format(" Completed importing {0} items.\n  Excluded {1} items due to minimum stat criteria.", itemCount, (rawItemCount - itemCount)));
+            Console.WriteLine(string.Format("Including {0} gear mod combinations.", this.GearModCombinations.Count()));
         }
 
         public int GenerateBuildCombinationCache(string name)
@@ -201,16 +206,27 @@ namespace Lib
                 }
                 else
                 {
-                    buildCount++;
-                    var aggregatedStats = calculateAggregateBuildStats(itemsInBuild);
+                    // we have all the main gear items, now factor in gear mods
+                    foreach (var gearModCombo in this.GearModCombinations)
+                    {
+                        // add the current gearmod items to the build
+                        var buildWithMods = new List<GearItem>();
+                        buildWithMods.AddRange(itemsInBuild);
+                        buildWithMods.AddRange(gearModCombo.ToList());
 
-                    // create build cache - using item ID to refer to each item and including the aggregate values
-                    var itemRefs = itemsInBuild.Select(i => i.Id).ToList();
-                    var buildCacheEntry = new CachedBuildInfo(itemRefs, aggregatedStats);
-                    sw.WriteLine(JsonConvert.SerializeObject(buildCacheEntry));                    
+                        // calculate the aggregated stats based on gear items and gear mods
+                        var aggregatedStats = calculateAggregateBuildStats(buildWithMods);
 
-                    // progress reporting
-                    if (buildCount % 100 == 0) Console.Write(".");
+                        // create build cache - using item ID to refer to each item and including the aggregate values
+                        var itemRefs = buildWithMods.Select(i => i.Id).ToList();
+                        var buildCacheEntry = new CachedBuildInfo(itemRefs, aggregatedStats);
+                        sw.WriteLine(JsonConvert.SerializeObject(buildCacheEntry));
+
+                        // progress reporting
+                        buildCount++;
+                        if (buildCount % 10000 == 0) Console.Write(".");
+                        if (buildCount % 1000000 == 0) Console.Write(buildCount / 1000000);
+                    }
                 }
 
                 // reset the itemsInBuild array
@@ -258,6 +274,8 @@ namespace Lib
                 case "holster":
                     minArmor = ((1001.0 - 852.0) / 100.0 * minPercentile) + 852;
                     break;
+                case "gearmod":
+                    return true;
                 default:
                     throw new Exception(string.Format("Unknown item type: {0}", item.ItemType));                        
             }

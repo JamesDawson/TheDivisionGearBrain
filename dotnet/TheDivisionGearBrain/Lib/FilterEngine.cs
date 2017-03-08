@@ -12,23 +12,39 @@ namespace Lib
 {
     public interface IFilter
     {
-        bool Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters);
+        FilterResult Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters);
+    }
+    public class FilterResult
+    {
+        public bool Passed { get; set; }
     }
 
     public class EnsureAtLeastFilter : IFilter
     {
-        public bool Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
+        public FilterResult Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
         {
-            return false;
+            var statName = parameters["stat"];
+            var minValue = Convert.ToDecimal(parameters["min_value"]);
+
+            var res = new FilterResult();
+            res.Passed = buildStats[statName] > minValue;
+
+            return res;
         }
     }
 
     public class UnlockNamedGearSetFilter : IFilter
     {
-        public bool Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
+        public FilterResult Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
         {
-            return false;
+            return new FilterResult();
         }
+    }
+
+    public class BuildInfo
+    {
+        public List<GearItem> Items { get; set; }
+        public Dictionary<string, decimal> Stats { get; set; }
     }
 
     public class FilterPipelineStep
@@ -75,48 +91,63 @@ namespace Lib
             }
         }
 
-        public void Process()
+        public List<BuildInfo> Process()
         {
+            var results = new List<BuildInfo>();
+
             if (this.Filters.Count > 0)
             {
                 Console.WriteLine("Searching build combinations...");
                 using (var sr = new StreamReader(this.buildsCacheFile))
                 {
-                    // read the build info from the cache file
-                    var cachedBuild = JsonConvert.DeserializeObject<CachedBuildInfo>(sr.ReadLine());
-
-                    // map the item IDs to the actual Item object
-                    var buildInfo = new List<GearItem>();
-                    foreach (var itemId in cachedBuild.Items)
+                    var counter = 0;
+                    while (!sr.EndOfStream)
                     {
-                        var fullItem = this.Items.Where(i => i.Id == itemId).FirstOrDefault();
-                        buildInfo.Add(fullItem);
-                    }
-                    //var buildInfo = cachedBuild.Items.Select(c => this.Items.Where(i => i.Id == c).FirstOrDefault()).FirstOrDefault();
-                    var buildStats = cachedBuild.Stats;
+                        counter++;
+                        // read the build info from the cache file
+                        var cachedBuild = JsonConvert.DeserializeObject<CachedBuildInfo>(sr.ReadLine());
 
-                    var allFiltersPassed = true;
-                    var interfaceType = typeof(IFilter);
-                    foreach (var filter in this.Filters)
-                     {
-                        // call filter via reflection?
-                        var res = invokeFilter(filter.Filter, filter.Parameters, buildInfo, buildStats);
-                        if (!res)
+                        // map the item IDs to the actual Item object
+                        var buildInfo = new List<GearItem>();
+                        foreach (var itemId in cachedBuild.Items)
                         {
-                            allFiltersPassed = false;
-                            break;
+                            var fullItem = this.Items.Where(i => i.Id == itemId).FirstOrDefault();
+                            buildInfo.Add(fullItem);
                         }
-                    }
+                        //var buildInfo = cachedBuild.Items.Select(c => this.Items.Where(i => i.Id == c).FirstOrDefault()).FirstOrDefault();
+                        var buildStats = cachedBuild.Stats;
 
-                    if (allFiltersPassed)
-                    {
-                        // apply sort
+                        var allFiltersPassed = true;
+                        var interfaceType = typeof(IFilter);
+                        foreach (var filter in this.Filters)
+                        {
+                            // call filter via reflection?
+                            var res = invokeFilter(filter.Filter, filter.Parameters, buildInfo, buildStats);
+                            if (!res.Passed)
+                            {
+                                allFiltersPassed = false;
+                                break;
+                            }
+                        }
+
+                        if (allFiltersPassed)
+                        {
+                            results.Add(new BuildInfo { Items = buildInfo, Stats = buildStats });
+                            results = results.OrderBy(s => s.Stats["stamina"]).OrderBy(s => s.Stats["armor"]).Take(this.ResultsCount).ToList();
+                        }
+
+                        // progress reporting
+                        if (counter % 1000 == 0) Console.Write(".");
+                        if (counter % 1000000 == 0) Console.Write(counter / 100000);
                     }
                 }
             }
+
+            Console.WriteLine("\nCompleted.");
+            return results;
         }
 
-        private bool invokeFilter(string filterTypeName, Dictionary<string, string> filterArgs, List<GearItem> buildItems, Dictionary<string,decimal> buildStats)
+        private FilterResult invokeFilter(string filterTypeName, Dictionary<string, string> filterArgs, List<GearItem> buildItems, Dictionary<string,decimal> buildStats)
         {
             //var type = Type.GetType(filter.Filter);
             //if (interfaceType.IsAssignableFrom(filterType))
@@ -133,12 +164,12 @@ namespace Lib
                     ParameterInfo[] parameters = m.GetParameters();
                     object instance = Activator.CreateInstance(type, null);
                     object[] parametersArray = new object[] { buildItems, buildStats, filterArgs };
-                    bool res = ((bool)m.Invoke(instance, parametersArray));
+                    FilterResult res = ((FilterResult)m.Invoke(instance, parametersArray));
                     return res;
                 }
             }
 
-            return false;
+            return new FilterResult { Passed = false };
         }
     }
 }

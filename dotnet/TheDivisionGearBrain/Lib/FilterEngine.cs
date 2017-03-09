@@ -19,28 +19,6 @@ namespace Lib
         public bool Passed { get; set; }
     }
 
-    public class EnsureAtLeastFilter : IFilter
-    {
-        public FilterResult Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
-        {
-            var statName = parameters["stat"];
-            var minValue = Convert.ToDecimal(parameters["min_value"]);
-
-            var res = new FilterResult();
-            res.Passed = buildStats[statName] > minValue;
-
-            return res;
-        }
-    }
-
-    public class UnlockNamedGearSetFilter : IFilter
-    {
-        public FilterResult Process(List<GearItem> buildItems, Dictionary<string, decimal> buildStats, Dictionary<string, string> parameters)
-        {
-            return new FilterResult();
-        }
-    }
-
     public class BuildInfo
     {
         public List<GearItem> Items { get; set; }
@@ -64,10 +42,10 @@ namespace Lib
         public List<FilterPipelineStep> Filters { get; set; }
         public List<string> SortCriteria { get; set; }
 
-        public FilterEngine(string cacheName, int resultsCount)
+        public FilterEngine(string cacheName, int resultsCount, string workingDir  = @".\")
         {
-            this.itemsCacheFile = string.Format("{0}-items.dat", cacheName);
-            this.buildsCacheFile = string.Format("{0}-builds.dat", cacheName);
+            this.itemsCacheFile = Path.Combine(workingDir, string.Format("{0}-items.dat", cacheName));
+            this.buildsCacheFile = Path.Combine(workingDir, string.Format("{0}-builds.dat", cacheName));
             this.ResultsCount = resultsCount;
             this.Filters = new List<FilterPipelineStep>();
             this.SortCriteria = new List<string>();
@@ -133,11 +111,12 @@ namespace Lib
                         if (allFiltersPassed)
                         {
                             results.Add(new BuildInfo { Items = buildInfo, Stats = buildStats });
-                            results = results.OrderBy(s => s.Stats["stamina"]).OrderBy(s => s.Stats["armor"]).Take(this.ResultsCount).ToList();
+                            // TODO: programatically build-up series of OrderBy statements
+                            results = results.OrderBy(s => s.Stats["electronics"]).OrderBy(s => s.Stats["skillhaste"]).Take(this.ResultsCount).ToList();
                         }
 
                         // progress reporting
-                        if (counter % 1000 == 0) Console.Write(".");
+                        if (counter % 10000 == 0) Console.Write(".");
                         if (counter % 1000000 == 0) Console.Write(counter / 100000);
                     }
                 }

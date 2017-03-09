@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using Nest;
 using Newtonsoft.Json;
 
 namespace Lib
@@ -64,7 +65,8 @@ namespace Lib
     public class Inventory
     {
         private const string ITEM_TYPE_FIELD = "item_type";
-        //private const string ITEM_HASH_FIELD = "base64_hash";
+
+        public string WorkingDir = @".\";
 
         public enum ItemType
         {
@@ -115,11 +117,7 @@ namespace Lib
         }
         private readonly string[] StatsAsString;
 
-        //public Dictionary<ItemType, List<Dictionary<string, string>>> Items { get; set; }
-        public Dictionary<string, List<GearItem>> Items { get; set; }
-        public List<IEnumerable<GearItem>> GearModCombinations { get; set; }
-
-        public Inventory(string datafile, int minPercentile = 50)
+        public Inventory(string datafile, int minPercentile = 50, string workingDir = @".\")
         {
             this.StatsAsString = Enum.GetNames(typeof(Stats));
             this.ItemTypesAsString = Enum.GetNames(typeof(ItemType));
@@ -135,31 +133,41 @@ namespace Lib
                 { "gearmod", new List<GearItem>() }
             };
 
+            this.WorkingDir = workingDir;
+
             int rawItemCount = 0;
             int itemCount = 0;
-            using (var sr = new StreamReader(datafile)) {
+            using (var sr = new StreamReader(datafile))
+            {
                 Console.WriteLine("Importing items from data file...");
                 var rawItems = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(sr.ReadToEnd());
                 foreach (var item in rawItems)
                 {
                     var gearItem = new GearItem(item);
                     if (ensureMinimumPercentile(gearItem, minPercentile))
-                    {                 
+                    {
                         Items[gearItem.ItemType.ToLower()].Add(gearItem);
                         itemCount++;
                     }
                     rawItemCount++;
                 }
             }
+
+            // calculate the combinations of gear mods that can be used with each build
             this.GearModCombinations = this.Items["gearmod"].DifferentCombinations(5).ToList();
-            Console.WriteLine(string.Format(" Completed importing {0} items.\n  Excluded {1} items due to minimum stat criteria.", itemCount, (rawItemCount - itemCount)));
-            Console.WriteLine(string.Format("Including {0} gear mod combinations.", this.GearModCombinations.Count()));
+
+            Console.WriteLine(string.Format(" Completed importing {0} gear items and {1} gear mods.", rawItemCount - Items["gearmod"].Count(), Items["gearmod"].Count()));
+            Console.WriteLine(string.Format(" Excluded {0} gear items due to minimum stat criteria ({2}%) - {1} will included in the build analysis.", rawItemCount - itemCount, itemCount, minPercentile));
+            Console.WriteLine(string.Format(" Derived {0} gear mod combinations.", this.GearModCombinations.Count()));
         }
 
+
+        public Dictionary<string, List<GearItem>> Items { get; set; }
+        public List<IEnumerable<GearItem>> GearModCombinations { get; set; }
         public int GenerateBuildCombinationCache(string name)
         {
-            string itemCacheFilename = string.Format("{0}-items.dat", name);
-            string buildCacheFilename = string.Format("{0}-builds.dat", name);
+            string itemCacheFilename = Path.Combine(this.WorkingDir, string.Format("{0}-items.dat", name));
+            string buildCacheFilename = Path.Combine(this.WorkingDir, string.Format("{0}-builds.dat", name));
 
             Console.WriteLine("Generating item cache file...");
             var flattenedItems = new List<GearItem>();
@@ -171,6 +179,10 @@ namespace Lib
             {
                 sw.Write(JsonConvert.SerializeObject(flattenedItems));
             }
+            //var local = new Uri("http://localhost:9200");
+            //var settings = new ConnectionSettings(local);
+            //var elastic = new ElasticClient(settings);
+
 
             Console.WriteLine("Generating build cache file...");
             var numBuilds = 0;
@@ -181,7 +193,6 @@ namespace Lib
 
             return numBuilds;
         }
-
 
 
         private int findBuildCombinations(Dictionary<string, List<GearItem>> itemsToProcess, StreamWriter sw, int itemType, List<GearItem> itemsInBuild = null, int buildCount = 0)
@@ -235,7 +246,6 @@ namespace Lib
 
             return buildCount;
         }
-
         private Dictionary<string, decimal> calculateAggregateBuildStats(List<GearItem> buildItems)
         {
             var aggStats = new Dictionary<string, decimal>();
@@ -247,7 +257,6 @@ namespace Lib
 
             return aggStats;
         }
-
         private bool ensureMinimumPercentile(GearItem item, int minPercentile = 50)
         {
             decimal minStat = 1193;
@@ -284,29 +293,5 @@ namespace Lib
             return ( item.Stats["armor"] > Convert.ToDecimal(minArmor) && mainStatValue > minStat );
         }
 
-        private string serialize(object obj)
-        {
-            var formatter = new BinaryFormatter();
-            using (var stream = new MemoryStream())
-            {
-                formatter.Serialize(stream, obj);
-
-                stream.Position = 0;
-                var sr = new StreamReader(stream);
-                var text = sr.ReadToEnd();
-
-                return toHash(text);
-            }
-        }
-
-        private string toHash(string str)
-        {
-            var bytes = Encoding.UTF8.GetBytes(str);
-
-            var sha1 = new SHA1CryptoServiceProvider();
-            byte[] result = sha1.ComputeHash(bytes);
-
-            return Convert.ToBase64String(result);
-        }
     }
 }

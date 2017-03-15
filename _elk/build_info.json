@@ -1,0 +1,110 @@
+{
+  "build_info": {
+    "properties": {
+      "items": {
+        "type": "string"
+      },
+      "aggregatestats": {
+        "type": "nested",
+        "properties": { 
+          "firearms": {
+            "type": "integer"
+          },
+          "stamina": {
+            "type": "integer"
+          },
+          "electronics": {
+            "type": "integer"
+          },
+          "armor": {
+            "type": "integer"
+          },
+          "health": {
+            "type": "integer"
+          },
+          "allresist": {
+            "type": "integer"
+          },
+          "hp_on_kill": {
+            "type": "integer"
+          },
+          "protection_from_elites": {
+            "type": "integer"
+          },
+          "exotic_dmg_resilience": {
+            "type": "integer"
+          },
+          "critchance": {
+            "type": "integer"
+          },
+          "critdamage": {
+            "type": "integer"
+          },
+          "smg_damage": {
+            "type": "integer"
+          },
+          "ar_damage": {
+            "type": "integer"
+          },
+          "shotgun_dmg": {
+            "type": "integer"
+          },
+          "lmg_dmg": {
+            "type": "integer"
+          },
+          "pistol_dmg": {
+            "type": "integer"
+          },
+          "mmr_dmg": {
+            "type": "integer"
+          },
+          "enemyarmordmg": {
+            "type": "integer"
+          },
+          "skillhaste": {
+            "type": "integer"
+          },
+          "skillpower": {
+            "type": "integer"
+          },
+          "weaponstab": {
+            "type": "integer"
+          },
+          "wepreloadspd": {
+            "type": "integer"
+          },
+          "sig_res_gain": {
+            "type": "integer"
+          },
+          "dmg_vs_elites": {
+            "type": "integer"
+          },
+          "shockresist": {
+            "type": "integer"
+          },
+          "burnresist": {
+            "type": "integer"
+          },
+          "disorientresist": {
+            "type": "integer"
+          },
+          "blinddeafresist": {
+            "type": "integer"
+          },
+          "disruptresist": {
+            "type": "integer"
+          },
+          "bleedresist": {
+            "type": "integer"
+          },
+          "killxp": {
+            "type": "integer"
+          },
+          "ammocap": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,3 +2,5 @@
 bin/
 obj/
 dotnet/TheDivisionGearBrain/packages/
+_elk/elasticsearch*/
+_elk/kibana*/
